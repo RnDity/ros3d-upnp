@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root xmlns="urn:schemas-upnp-org:device-1-0">
+  <specVersion>
+    <major>1</major>
+    <minor>0</minor>
+  </specVersion>
+
+  <device>
+    <deviceType>urn:schemas-upnp-org:device:ManageableDevice:1</deviceType>
+    <friendlyName>Ros3D KR</friendlyName>
+    <manufacturer>OpenRnD</manufacturer>
+    <modelName>KR</modelName>
+    <UDN>uuid:7ada0f6e-7383-46f0-9aea-c98ebf9ee691</UDN>
+
+    <!-- web page with some UI, possibly redirect to actual
+         configuration WebUI -->
+    <presentationURL>/config</presentationURL>
+  </device>
+</root>
