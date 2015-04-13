@@ -7,7 +7,7 @@ import os
 NAME='ros3dupnp'
 VERSION = '0.1'
 
-install_requires = ['pygobject']
+install_requires = []
 tests_require = []
 
 ROOT = os.path.dirname(__file__)
