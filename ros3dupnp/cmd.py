@@ -16,8 +16,10 @@ def parse_arguments():
     parser.add_argument('-t', '--redirect-target',
                         help='Presentation URL HTTP redirect target. ' \
                         'Special host 0.0.0.0 indicates that the current request\'s' \
-                        ' Location IP address is to be reused')
+                        ' Location IP address is to be reused',
+                        required=True)
     parser.add_argument('-x', '--device-xml',
+                        required=True,
                         help='Path to device XML file')
     return parser.parse_args()
 
