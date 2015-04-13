@@ -17,7 +17,6 @@ def read(fpath):
     with open(os.path.join(ROOT, fpath)) as inf:
         return inf.read()
 
-
 setup(
     name=NAME,
     version=VERSION,
@@ -33,5 +32,6 @@ setup(
         'console_scripts': [
             'ros3d-upnp = ros3dupnp.cmd:main'
         ]
-    }
+    },
+    data_files=[('', ['xml/device.xml'])]
 )
