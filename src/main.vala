@@ -8,9 +8,12 @@ public class Main {
 
 	// prased redirect URL
 	private static Soup.URI parsed_uri = null;
-	// current GUPnP context
-	private static GUPnP.Context ctx = null;
+	// presentation URI we hook up to
+	private static string presentation_uri = null;
+	// Context manager
+	private static GUPnP.ContextManager ctx_mgr = null;
 
+	// Command line options
 	private static bool log_debug = false;
 	private static string redirect_target = null;
 	private static string dev_xml = null;
@@ -24,7 +27,6 @@ public class Main {
 		 "Path to device XML", null},
 		{null}
 	};
-
 
     /**
 	 * config_cb:
@@ -56,6 +58,40 @@ public class Main {
 		msg.set_redirect(Soup.Status.FOUND, target);
 	}
 
+	private static void setup_for_context(Context ctx) {
+
+		assert(presentation_uri != null);
+
+		var dev = UPnPDevice.new_device(ctx, dev_xml);
+
+		if (dev == null) {
+			error("failed to setup new device");
+		}
+
+		ctx.add_server_handler(false, presentation_uri,
+							   (server, msg, path, query, client) => {
+								   message("got presentation URL request");
+								   config_cb(server, msg, path);
+							   });
+
+		debug("set device available");
+		dev.set_available(true);
+
+		debug("add to context manager");
+		ctx_mgr.manage_root_device(dev);
+	}
+
+	public static void on_context_available(Context ctx) {
+		debug("context available: %s %u", ctx.host_ip, ctx.port);
+
+		setup_for_context(ctx);
+	}
+
+	public static void on_context_unavailable(Context ctx) {
+		debug("context unavailable: %s %u", ctx.host_ip, ctx.port);
+
+	}
+
 	private static bool parse_redirect_target(string redirect_target) {
 		var uri = new Soup.URI(redirect_target);
 
@@ -68,6 +104,17 @@ public class Main {
 		return true;
 	}
 
+	private static bool setup_presentation_handler(string device_xml_path) {
+		string pres_url = UPnPDevice.get_presentation_url_from_desc(device_xml_path);
+
+		if (pres_url == null)
+			return false;
+
+		presentation_uri = pres_url;
+
+		debug("presentation URL: %s", presentation_uri);
+		return true;
+	}
 
 	public static int main(string[] args)
 		{
@@ -109,28 +156,19 @@ http://mydevice.local:1213/config.
 				return -1;
 			}
 
-			try {
-				debug("create new UPnP context");
-				ctx = new GUPnP.Context(null, null, 0);
-			} catch (GLib.Error e) {
-				error("failed to create context: %s", e.message);
-			}
-
-			var dev = UPnPDevice.new_for_device(ctx, dev_xml);
-
-			if (dev == null) {
+			if (setup_presentation_handler(dev_xml) == false) {
 				return -1;
 			}
 
-			ctx.add_server_handler(false, dev.presentation_url,
-								   (server, msg, path, query, client) => {
-									   message("got presentation URL request");
-									   config_cb(server, msg, path);
-								   });
+			ctx_mgr = GUPnP.ContextManager.create(0);
 
-			dev.dev.set_available(true);
+			ctx_mgr.context_available.connect((ctx) => {
+					on_context_available(ctx);
+				});
+			ctx_mgr.context_unavailable.connect((ctx) => {
+					on_context_unavailable(ctx);
+				});
 
-			message("location address: http://%s:%u", ctx.host_ip, ctx.port);
 			var loop = new MainLoop();
 
 			message("loop run()...");
