@@ -10,5 +10,6 @@ ros3d_upnp_CFLAGS = $(ROS3D_UPNP_CFLAGS) -Isrc
 
 VALAFLAGS = $(ROS3D_UPNP_VALAFLAGS) --no-color
 
+BUILT_SOURCES=$(ros3d_upnp_SOURCES:.vala=.c)
 CLEANFILES = $(BUILT_SOURCES)
 
